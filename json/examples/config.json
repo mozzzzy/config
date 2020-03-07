@@ -1,0 +1,12 @@
+{
+  "array":  [10, 20],
+  "int":    10,
+  "float64":    1.2,
+  "string": "some value",
+  "object": {
+    "array":  [10, 20],
+    "int":    10,
+    "float64":    1.2,
+    "string": "some value"
+  }
+}
