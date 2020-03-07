@@ -210,6 +210,14 @@ func (conf Config) Get(key string) (interface{}, error) {
 	return opt.GetValue()
 }
 
+func (conf Config) GetAllKeys() []string {
+	var keys []string
+	for _, opt := range conf.options {
+		keys = append(keys, opt.Key)
+	}
+	return keys
+}
+
 func (conf Config) GetFloat64(key string) (float64, error) {
 	var zeroVal float64
 	value, err := conf.Get(key)

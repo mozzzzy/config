@@ -478,6 +478,30 @@ func TestGet(t *testing.T) {
 	})
 }
 
+func TestGetAllKeys(t *testing.T) {
+	t.Run("some keys exist", func(t *testing.T) {
+		var conf Config
+		addOptionErr := conf.AddOptions([]configOption.Option {
+			{
+				Key:         "array",
+				ValueType:   "array",
+				Description: "some description.",
+			},
+			{
+				Key:         "string",
+				ValueType:   "string",
+				Description: "some description.",
+			},
+		})
+		testUtil.NoError(t, addOptionErr)
+
+		keys := conf.GetAllKeys()
+		testUtil.Match(t, 2, len(keys))
+		testUtil.Match(t, "array", keys[0])
+		testUtil.Match(t, "string", keys[1])
+	})
+}
+
 func TestGetFloat64Array(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		var conf Config
