@@ -124,7 +124,9 @@ func (conf *Config) parseOneLayer(kvs map[string]interface{}, parentKey string) 
 				return errors.New(fmt.Sprintf(
 					"Invalid object value for %v \"%v\".", key, kvs[key]))
 			}
-			conf.parseOneLayer(nextKvs, absolutePath)
+			if err := conf.parseOneLayer(nextKvs, absolutePath); err != nil {
+				return err
+			}
 		case "string":
 			str, ok := kvs[key].(string)
 			if !ok {
