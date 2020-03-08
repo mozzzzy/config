@@ -24,6 +24,8 @@ const ONE_FLOAT64_JSON string = "testData/one_float64.json"
 const ONE_FLOAT64_ARRAY_JSON string = "testData/one_float64_array.json"
 const ONE_INT_JSON string = "testData/one_int.json"
 const ONE_INT_ARRAY_JSON string = "testData/one_int_array.json"
+const ONE_INT64_JSON string = "testData/one_int64.json"
+const ONE_INT64_ARRAY_JSON string = "testData/one_int64_array.json"
 const ONE_OBJECT_JSON string = "testData/one_object.json"
 const ONE_STRING_JSON string = "testData/one_string.json"
 const ONE_STRING_ARRAY_JSON string = "testData/one_string_array.json"
@@ -275,6 +277,27 @@ func TestGet(t *testing.T) {
 		testUtil.Match(t, expect, castedActual)
 	})
 
+	t.Run("get int64", func(t *testing.T) {
+		var conf Config
+		addOptionErr := conf.AddOption(
+			configOption.Option{
+				Key:         "int64",
+				ValueType:   "int64",
+				Description: "some description.",
+			},
+		)
+		testUtil.NoError(t, addOptionErr)
+
+		parseErr := conf.Parse(ONE_INT64_JSON)
+		testUtil.NoError(t, parseErr)
+		var expect int64 = 2147483648
+		actual, getErr := conf.Get("int64")
+		testUtil.NoError(t, getErr)
+		castedActual, ok := actual.(int64)
+		testUtil.Match(t, true, ok)
+		testUtil.Match(t, expect, castedActual)
+	})
+
 	t.Run("get object", func(t *testing.T) {
 		var conf Config
 		addOptionErr := conf.AddOptions([]configOption.Option{
@@ -300,7 +323,7 @@ func TestGet(t *testing.T) {
 		castedChildConf, ok := childConf.(Config)
 		testUtil.Match(t, true, ok)
 
-		actual, getStringErr := castedChildConf.Get("object.key")
+		actual, getStringErr := castedChildConf.Get("key")
 		testUtil.NoError(t, getStringErr)
 
 		castedActual, ok := actual.(string)
@@ -556,6 +579,33 @@ func TestGetIntArray(t *testing.T) {
 	})
 }
 
+func TestGetInt64Array(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		var conf Config
+		addOptionErr := conf.AddOption(
+			configOption.Option{
+				Key:         "array",
+				ValueType:   "array",
+				Description: "some description.",
+			},
+		)
+		testUtil.NoError(t, addOptionErr)
+
+		parseErr := conf.Parse(ONE_INT64_ARRAY_JSON)
+		testUtil.NoError(t, parseErr)
+
+		expect := []int64{-2147483649, 2147483648}
+		actual, getErr := conf.GetInt64Array("array")
+		testUtil.NoError(t, getErr)
+
+		testUtil.Match(t, 2, len(actual))
+		if len(actual) == 2 {
+			testUtil.Match(t, expect[0], actual[0])
+			testUtil.Match(t, expect[1], actual[1])
+		}
+	})
+}
+
 func TestGetStringArray(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		var conf Config
@@ -713,6 +763,73 @@ func TestGetInt(t *testing.T) {
 	})
 }
 
+func TestGetInt64(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		var conf Config
+		addOptionErr := conf.AddOption(
+			configOption.Option{
+				Key:         "int64",
+				ValueType:   "int64",
+				Description: "some description.",
+			},
+		)
+		testUtil.NoError(t, addOptionErr)
+
+		parseErr := conf.Parse(ONE_INT64_JSON)
+		testUtil.NoError(t, parseErr)
+
+		var expect int64 = 2147483648
+		actual, getErr := conf.GetInt64("int64")
+		testUtil.NoError(t, getErr)
+		testUtil.Match(t, expect, actual)
+	})
+
+	t.Run("valid in object", func(t *testing.T) {
+		var conf Config
+		addOptionErr := conf.AddOptions([]configOption.Option{
+			{
+				Key:         "object",
+				ValueType:   "object",
+				Description: "some description.",
+			},
+			{
+				Key:         "object.int",
+				ValueType:   "int",
+				Description: "some description.",
+			},
+		})
+		testUtil.NoError(t, addOptionErr)
+
+		parseErr := conf.Parse(ALL_IN_ONE_JSON)
+		testUtil.NoError(t, parseErr)
+
+		var expect int = 20
+		actual, getErr := conf.GetInt("object.int")
+		testUtil.NoError(t, getErr)
+		testUtil.Match(t, expect, actual)
+	})
+
+	t.Run("invalid (string)", func(t *testing.T) {
+		var conf Config
+		addOptionErr := conf.AddOption(
+			configOption.Option{
+				Key:         "string",
+				ValueType:   "string",
+				Description: "some description.",
+			},
+		)
+		testUtil.NoError(t, addOptionErr)
+
+		parseErr := conf.Parse(ONE_STRING_JSON)
+		testUtil.NoError(t, parseErr)
+
+		_, getErr := conf.GetInt("string")
+		testUtil.WithError(t, getErr)
+	})
+}
+
+
+
 func TestGetObject(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		var conf Config
@@ -736,7 +853,7 @@ func TestGetObject(t *testing.T) {
 		childConf, getErr := conf.GetObject("object")
 		testUtil.NoError(t, getErr)
 
-		actual, getStringErr := childConf.GetString("object.key")
+		actual, getStringErr := childConf.GetString("key")
 		testUtil.NoError(t, getStringErr)
 
 		expect := "value"

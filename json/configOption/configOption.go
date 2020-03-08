@@ -14,7 +14,7 @@ import (
  */
 
 type Option struct {
-	Key       string
+	Key            string
 	Description    string
 	ValueType      string
 	DefaultValue   interface{}
@@ -44,15 +44,27 @@ func validateRule(opt Option) error {
 				opt.Key))
 	}
 	if opt.DefaultValue != nil {
-		switch(opt.ValueType) {
-			case "int":
-				if val, ok := opt.DefaultValue.(int); !ok {
-					return errors.New(fmt.Sprintf("Invalid int default value %v.", val))
-				}
-			case "string":
-				if val, ok := opt.DefaultValue.(string); !ok {
-					return errors.New(fmt.Sprintf("Invalid string default value %v.", val))
-				}
+		switch opt.ValueType {
+		case "array":
+			if val, ok := opt.DefaultValue.([]interface{}); !ok {
+				return errors.New(fmt.Sprintf("Invalid []interface{} default value %v.", val))
+			}
+		case "float64":
+			if val, ok := opt.DefaultValue.(float64); !ok {
+				return errors.New(fmt.Sprintf("Invalid float64 default value %v.", val))
+			}
+		case "int":
+			if val, ok := opt.DefaultValue.(int); !ok {
+				return errors.New(fmt.Sprintf("Invalid int default value %v.", val))
+			}
+		case "int64":
+			if val, ok := opt.DefaultValue.(int64); !ok {
+				return errors.New(fmt.Sprintf("Invalid int64 default value %v.", val))
+			}
+		case "string":
+			if val, ok := opt.DefaultValue.(string); !ok {
+				return errors.New(fmt.Sprintf("Invalid string default value %v.", val))
+			}
 		}
 	}
 	return nil
@@ -75,7 +87,7 @@ func (opt *Option) GetValue() (interface{}, error) {
 	return opt.Value, nil
 }
 
-func (opt Option)IsSet() bool {
+func (opt Option) IsSet() bool {
 	return opt.set
 }
 
@@ -131,6 +143,17 @@ func (opt *Option) SetValue(value interface{}) error {
 				fmt.Sprintf(
 					"Failed to SetValue to option. "+
 						"The ValueType is int. "+
+						"But specified value is %T.", value))
+		}
+	case "int64":
+		integer64, ok := value.(int64)
+		if ok {
+			opt.Value = integer64
+		} else {
+			return errors.New(
+				fmt.Sprintf(
+					"Failed to SetValue to option. "+
+						"The ValueType is int64. "+
 						"But specified value is %T.", value))
 		}
 	case "string":

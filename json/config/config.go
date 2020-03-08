@@ -115,6 +115,16 @@ func (conf *Config) parseOneLayer(kvs map[string]interface{}, parentKey string) 
 			if err := opt.SetValue(integer); err != nil {
 				return err
 			}
+		case "int64":
+			flt64, ok := kvs[key].(float64)
+			if !ok {
+				return errors.New(fmt.Sprintf(
+					"Invalid float64 value for %v \"%v\".", key, kvs[key]))
+			}
+			integer64 := int64(flt64)
+			if err := opt.SetValue(integer64); err != nil {
+				return err
+			}
 		case "object":
 			if err := opt.SetValue(0); err != nil {
 				return err
@@ -287,6 +297,35 @@ func (conf Config) GetIntArray(key string) ([]int, error) {
 	return intArray, nil
 }
 
+func (conf Config) GetInt64(key string) (int64, error) {
+	var zeroVal int64
+	value, err := conf.Get(key)
+	if err != nil {
+		return zeroVal, err
+	}
+	integer64, ok := value.(int64)
+	if !ok {
+		return zeroVal, errors.New(fmt.Sprintf(
+			"Value of option \"%v\" is not int64. Its type is %T.", key, value))
+	}
+	return integer64, nil
+}
+
+func (conf Config) GetInt64Array(key string) ([]int64, error) {
+	var zeroVal []int64
+	flt64Array, err := conf.GetFloat64Array(key)
+	if err != nil {
+		return zeroVal, err
+	}
+
+	var intArray64 []int64
+	for _, flt64 := range flt64Array {
+		integer64 := int64(flt64)
+		intArray64 = append(intArray64, integer64)
+	}
+	return intArray64, nil
+}
+
 func (conf Config) GetObject(key string) (Config, error) {
 	var childConf Config
 
@@ -298,7 +337,8 @@ func (conf Config) GetObject(key string) (Config, error) {
 	}
 
 	for _, opt := range conf.options {
-		if opt.Key != key && strings.HasPrefix(opt.Key, key) {
+		if strings.HasPrefix(opt.Key, key + ".") {
+			opt.Key = strings.Split(opt.Key, key + ".")[1]
 			childConf.options = append(childConf.options, opt)
 		}
 	}
