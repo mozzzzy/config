@@ -428,10 +428,25 @@ func (conf Config) String() string {
 		if opt.ValueType != "" && opt.ValueType != "nil" {
 			if opt.DefaultValue != nil {
 				switch opt.ValueType {
+				case "array":
+					defaultValArray, ok := opt.DefaultValue.([]interface{})
+					if ok {
+						str += fmt.Sprintf(" (default: %v)", defaultValArray)
+					}
+				case "float64":
+					defaultValFlt64, ok := opt.DefaultValue.(float64)
+					if ok {
+						str += fmt.Sprintf(" (default: %v)", defaultValFlt64)
+					}
 				case "int":
 					defaultValInt, ok := opt.DefaultValue.(int)
 					if ok {
 						str += fmt.Sprintf(" (default: %v)", defaultValInt)
+					}
+				case "int64":
+					defaultValInt64, ok := opt.DefaultValue.(int64)
+					if ok {
+						str += fmt.Sprintf(" (default: %v)", defaultValInt64)
 					}
 				case "string":
 					defaultValStr, ok := opt.DefaultValue.(string)
